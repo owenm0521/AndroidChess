@@ -23,7 +23,7 @@ public class Pawn implements Piece {
 	String color;
 	
 	int num_moves = 0; 
-	boolean moved2 = false; 
+	boolean moved2 = false;
 	
 	/**
 	 * returns moved boolean
@@ -139,6 +139,11 @@ public class Pawn implements Piece {
 			return false;
 		}
 		}
+
+	@Override
+	public void setmoved(int n) {
+		num_moves = n;
+	}
 
 
 }

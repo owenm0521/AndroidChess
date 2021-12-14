@@ -55,8 +55,13 @@ public class Bishop implements Piece {
 		}
 		return false;
 	}
-	
-	/**
+
+    @Override
+    public void setmoved(int n) {
+
+    }
+
+    /**
 	 * returns moved boolean
 	 * @return moved 
 	 */

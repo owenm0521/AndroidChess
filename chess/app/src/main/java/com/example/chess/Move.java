@@ -8,18 +8,23 @@ public class Move {
     int newLocCol;
     int newID;
     boolean turn;
+    Piece capturedPiece;
+    boolean firstMove;
 
     public Move(int originalSquareRow, int originalSquareCol, int originalID, int newLocRow,
                 int newLocCol, int newID, boolean whiteTurn, boolean enPassantPossible,
                 boolean enPassantMove, boolean castlingMove, Piece capturedPiece, boolean pawnPromotion,
-                boolean firstMoveChanged) {
+                boolean firstMove) {
         this.originalSquareRow = originalSquareRow;
         this.originalSquareCol = originalSquareCol;
         this.originalID = originalID;
         this.newLocRow = newLocRow;
         this.newLocCol = newLocCol;
         this.newID = newID;
-        this.turn = turn;
+        this.turn = whiteTurn;
+        this.capturedPiece = capturedPiece;
+        this.firstMove  = firstMove;
+
     }
 
     public int getOriginalSquareRow() {

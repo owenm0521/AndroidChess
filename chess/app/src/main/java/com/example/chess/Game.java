@@ -1,14 +1,28 @@
 package com.example.chess;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 
 public class Game extends AppCompatActivity {
@@ -16,7 +30,7 @@ public class Game extends AppCompatActivity {
     public HashMap<Integer, int[]> findSquares = new HashMap<Integer, int[]>();
     public HashMap<ArrayList<Integer>, Integer> findIDFromMatrix = new HashMap<ArrayList<Integer>, Integer>();
     private ArrayList<Integer> firstClick = new ArrayList<Integer>();
-    private ArrayList<Move> gameMoves = new ArrayList<Move>();
+    private ArrayList<Move> moves = new ArrayList<Move>();
     private HashMap<String, Integer> pieces = new HashMap<String, Integer>();
     private boolean gameOn = true;
     private boolean whiteTurn = true;
@@ -59,12 +73,12 @@ public class Game extends AppCompatActivity {
             @Override
             public void onClick(View v){
                 if(whiteTurn){
-                    Toast.makeText(Game.this, "White resigns, black wins!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(Game.this, "White resigns, black wins!",Toast.LENGTH_LONG).show();
                 } else{
                     Toast.makeText(Game.this, "Black resigns, white wins!", Toast.LENGTH_LONG).show();
                 }
                 resign = true;
-                offerSaveGameDialog(Game.this);
+                gameOver(Game.this);
             }
         });
 
@@ -74,7 +88,7 @@ public class Game extends AppCompatActivity {
             public void onClick(View v){
                 Toast.makeText(Game.this, "The game ends in a draw.", Toast.LENGTH_LONG).show();
                 draw=true;
-                offerSaveGameDialog(Game.this);
+                gameOver(Game.this);
             }
         });
 
@@ -84,8 +98,119 @@ public class Game extends AppCompatActivity {
     public void move(int row, int col, int id){
         int frow = firstClick.get(0);
         int fcol = firstClick.get(1);
+    }
 
-        board.move()
+    public void undoMove(){
+        if(moves.size() < 1){
+            Toast.makeText(Game.this,"nothing to undo, please make a move!",Toast.LENGTH_LONG).show();
+        }
+
+        Move moveToUndo = moves.remove(moves.size()-1);
+        Piece originalPiece = board.board[moveToUndo.newLocRow][moveToUndo.newLocCol];
+        if(originalPiece.getType() == "Pawn" && (moveToUndo.newLocCol == 7 || moveToUndo.newLocCol == 0)){
+            String color = originalPiece.getName();
+            originalPiece = new Pawn(color);
+            originalPiece.setmoved(6);
+        }
+        if(originalPiece.getType() == "King" && Math.abs(moveToUndo.originalSquareRow - moveToUndo.newLocRow) == 2){
+            if(moveToUndo.originalSquareRow == 0){
+
+            }
+            else{
+
+            }
+            return;
+        }
+        board.board[moveToUndo.originalSquareRow][moveToUndo.originalSquareCol] = originalPiece;
+        board.board[moveToUndo.newLocRow][moveToUndo.newLocCol] = moveToUndo.capturedPiece;
+        whiteTurn = moveToUndo.isTurn();
+        if(moveToUndo.firstMove){
+            board.board[moveToUndo.originalSquareRow][moveToUndo.originalSquareCol].setmoved(0);
+        }
+        ImageButton ogSquare = (ImageButton)findViewById(moveToUndo.originalID);
+        ogSquare.setImageResource(0);
+        if(board.board[moveToUndo.originalSquareRow][moveToUndo.originalSquareCol].getType() == "Free Space"){
+            ogSquare.setImageResource(pieces.get(board.board[moveToUndo.originalSquareRow][moveToUndo.originalSquareCol].toString()));
+        }
+
+        // initially makes end Position blank, then fills in a piece there if one exists
+        ImageButton newSquare = (ImageButton)findViewById(moveToUndo.newID);
+        newSquare.setImageResource(0);
+        if(board.board[moveToUndo.newLocRow][moveToUndo.newLocCol].getType() == "Free Space"){
+            newSquare.setImageResource(pieces.get(board.board[moveToUndo.newLocRow][moveToUndo.newLocCol].toString()));
+        }
+    }
+
+    public void AIMove(){
+        
+    }
+
+    public void gameOver(Context context){
+        EditText gameName = new EditText(context);
+        AlertDialog alert = new AlertDialog.Builder(context).setPositiveButton("Save", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String name = String.valueOf(gameName.getText());
+                Date date = Calendar.getInstance().getTime();
+                SavedGame newGame = new SavedGame(moves, date, name, draw, resign);
+                saveGame(newGame, getApplicationContext());
+
+                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+            }
+        }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+            }
+        }).create();
+        alert.setTitle("Game Over");
+        alert.setMessage("Game has finished, would you like to save?");
+        alert.setView(gameName);
+
+        WindowManager.LayoutParams sizeCheck = new WindowManager.LayoutParams();
+        sizeCheck.copyFrom(alert.getWindow().getAttributes());
+        sizeCheck.width = WindowManager.LayoutParams.MATCH_PARENT;
+        sizeCheck.height = WindowManager.LayoutParams.MATCH_PARENT;
+        alert.show();
+
+        alert.getWindow().setAttributes(sizeCheck);
+    }
+
+    private void saveGame(SavedGame tempGame, Context context){
+        File file = new File(Game.this.getFilesDir(),"games");
+        ArrayList<SavedGame> all_games = new ArrayList<SavedGame>();
+        if(!file.exists()){
+            file.mkdir();
+        }
+        else{
+            all_games = readGames();
+
+        }
+        all_games.add(tempGame);
+        try {
+            File saveFile = new File(file,"savedGame");
+            ObjectOutputStream output = new ObjectOutputStream(new FileOutputStream(saveFile));
+            output.writeObject(all_games);
+
+            Toast.makeText(Game.this, "Game saved!", Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public ArrayList<SavedGame> readGames(){
+        try{
+            File file = new File(Game.this.getFilesDir(),"games");
+            File saveFile = new File(file,"savedGame");
+            ObjectInputStream input = new ObjectInputStream(new FileInputStream(saveFile));
+
+            ArrayList<SavedGame> listGames = (ArrayList<SavedGame>) input.readObject();
+            return listGames;
+        }
+        catch(Exception e){
+            return new ArrayList<SavedGame>();
+        }
     }
     
     public HashMap<String, Integer> populateBoard(HashMap<String, Integer> pieces){

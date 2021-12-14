@@ -55,7 +55,13 @@ public class Rook implements Piece {
 		}
 		return false;
 	}
-	/**
+
+    @Override
+    public void setmoved(int n) {
+        moved = false;
+    }
+
+    /**
 	 * returns moved boolean
 	 * @return moved 
 	 */
