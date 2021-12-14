@@ -38,4 +38,8 @@ public class SavedGame implements Serializable {
     public boolean isResign() {
         return resign;
     }
+
+    public String toString(){
+        return this.name + " " + this.date;
+    }
 }
