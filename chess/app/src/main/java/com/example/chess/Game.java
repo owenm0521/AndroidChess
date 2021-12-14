@@ -26,11 +26,13 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class Game extends AppCompatActivity {
 
     public HashMap<Integer, int[]> findSquares = new HashMap<Integer, int[]>();
-    public HashMap<ArrayList<Integer>, Integer> findIDFromMatrix = new HashMap<ArrayList<Integer>, Integer>();
+    public HashMap<int[], Integer> findID = new HashMap<int[], Integer>();
     private ArrayList<Integer> firstClick = new ArrayList<Integer>();
     private ArrayList<Move> moves = new ArrayList<Move>();
     private HashMap<String, Integer> pieces = new HashMap<String, Integer>();
@@ -457,7 +459,166 @@ public class Game extends AppCompatActivity {
     }
 
     public void AIMove(){
-        
+        for(int i = 0; i < board.board.length; i++){
+            for(int j = 0; j < board.board[i].length;j++){
+                Piece pp = board.board[i][j];
+                if(pp.getType() != "Free Space"){
+                    Character c = pp.getColor();
+                    if((whiteTurn == false && c == 'b') || (whiteTurn == true && c == 'w')){
+                        for(int a = 0; a<board.board.length; a++) {
+                            for (int b = 0; b < board.board[a].length; b++) {
+                                ArrayList<Piece> capturedPiece = new ArrayList<Piece>();
+                                ArrayList<Integer> startMatrixPos = new ArrayList<Integer>();
+                                startMatrixPos.add(i);
+                                startMatrixPos.add(j);
+                                ArrayList<Integer> endMatrixPos = new ArrayList<Integer>();
+                                endMatrixPos.add(a);
+                                endMatrixPos.add(b);
+                                int startID = findID.get(startMatrixPos);
+                                int endID = findID.get(endMatrixPos);
+                                firstClick.add(i); firstClick.add(j); firstClick.add(startID);
+
+
+
+                                if(board.move(c, i, j, a, b, capturedPiece)) {
+                                    if(whiteTurn)
+                                        whiteTurn=false;
+                                    else
+                                        whiteTurn = true;
+                                    if((i == a+2 || i == a-2) && j==b && board.board[a][b] instanceof Pawn) {
+                                        enPassantPossible = true;
+                                    }
+                                    else {
+                                        enPassantPossible = false;
+                                    }
+
+                                    // CHANGE PROMOTION FOR AI
+                                    if(board.board[a][b] instanceof Pawn && (a==0 || a==7)){
+
+                                        board.board[a][b] = new Queen(!whiteTurn);
+
+                                        board.check = board.check(board.board, c, 1);
+                                        board.checkMate = board.checkmate(c);
+
+                                        Piece pieceCaptured = null;
+                                        if(capturedPiece.size()>0) pieceCaptured = capturedPiece.get(0);
+
+                                        boolean castlingMove = false;
+
+                                        // records whether a piece's first move was changed
+                                        boolean firstMoveChanged = firstMove != board.board[a][b].firstMove;
+
+                                        //add this move to the list of moves
+                                        moves.add(new Move(i, j, startID, a, b, endID,
+                                                !whiteTurn, false,
+                                                pieceCaptured, true, firstMoveChanged, board.board[a][b]));
+
+                                        updateUserView(a, b, endID);
+
+                                        firstClick.clear();
+                                        return;
+                                    }
+
+
+                                    Piece pieceCaptured = null;
+                                    if(capturedPiece.size()>0) pieceCaptured = capturedPiece.get(0);
+
+                                    boolean castlingMove = false;
+                                    if(Math.abs(j-b)==2 && board.board[a][b] instanceof King){
+                                        castlingMove = true;
+                                    }
+
+                                    // records whether a piece's first move was changed
+                                    boolean firstMoveChanged = firstMove != board.board[a][b].firstMove;
+
+                                    //add this move to the list of moves
+                                    moves.add(new Move(i, j, startID, a, b, endID,
+                                            !whiteTurn, false,
+                                            pieceCaptured, false, firstMoveChanged));
+
+                                    updateUserView(a, b, endID);
+                                    firstClick.clear();
+                                    return;
+                                } else if(enPassantPossible && board.enPassantValid(i, j, a, b, whiteTurn)) {
+                                    if(whiteTurn)
+                                        whiteTurn=false;
+                                    else {
+                                        whiteTurn = true;
+                                    }
+                                    enPassantPossible=false;
+
+                                    updateUserView(a, b, endID);
+
+                                    // add this move to the list of moves
+                                    moves.add(new Move(i, j, startID, a, b, endID,
+                                            !whiteTurn, true,
+                                            null, false, false));
+
+                                    //handle the visuals of the pawn piece that was captured
+                                    //handle en passants along row 6 (on the chessboard)
+                                    if(a==2 && b==0){
+                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.A5);
+                                        capturedPawn.setImageResource(0);
+                                    } else if(a==2 && b==1){
+                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.B5);
+                                        capturedPawn.setImageResource(0);
+                                    } else if(a==2 && b==2){
+                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.C5);
+                                        capturedPawn.setImageResource(0);
+                                    } else if(a==2 && b==3){
+                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.D5);
+                                        capturedPawn.setImageResource(0);
+                                    } else if(a==2 && b==4){
+                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.E5);
+                                        capturedPawn.setImageResource(0);
+                                    } else if(a==2 && b==5){
+                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.F5);
+                                        capturedPawn.setImageResource(0);
+                                    } else if(a==2 && b==6){
+                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.G5);
+                                        capturedPawn.setImageResource(0);
+                                    } else if(a==2 && b==7){
+                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.H5);
+                                        capturedPawn.setImageResource(0);
+                                    }
+                                    // handle en passants along row 3 (on the chessboard)
+                                    if(a==5 && b==0){
+                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.A4);
+                                        capturedPawn.setImageResource(0);
+                                    } else if(a==5 && b==1){
+                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.B4);
+                                        capturedPawn.setImageResource(0);
+                                    } else if(a==5 && b==2){
+                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.C4);
+                                        capturedPawn.setImageResource(0);
+                                    } else if(a==5 && b==3){
+                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.D4);
+                                        capturedPawn.setImageResource(0);
+                                    } else if(a==5 && b==4){
+                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.E4);
+                                        capturedPawn.setImageResource(0);
+                                    } else if(a==5 && b==5){
+                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.F4);
+                                        capturedPawn.setImageResource(0);
+                                    } else if(a==5 && b==6){
+                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.G4);
+                                        capturedPawn.setImageResource(0);
+                                    } else if(a==5 && b==7){
+                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.H4);
+                                        capturedPawn.setImageResource(0);
+                                    }
+                                    firstClick.clear();
+                                    return;
+                                }
+
+                                firstClick.clear();
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
     }
 
     public void gameOver(Context context){
@@ -541,6 +702,87 @@ public class Game extends AppCompatActivity {
         pieces.put("bR",R.drawable.br);
         pieces.put("bK",R.drawable.bk);
         pieces.put("bN",R.drawable.bn);
+
+        // first row inputted to HashMap
+        findID.put(new int[]{0,0}, R.id.A8);
+        findID.put(new int[]{0,1}, R.id.B8);
+        findID.put(new int[]{0,2}, R.id.C8);
+        findID.put(new int[]{0,3}, R.id.D8);
+        findID.put(new int[]{0,4}, R.id.E8);
+        findID.put(new int[]{0,5}, R.id.F8);
+        findID.put(new int[]{0,6}, R.id.G8);
+        findID.put(new int[]{0,7}, R.id.H8);
+
+        // second row inputted to HashMap
+        findID.put(new int[]{1,0}, R.id.A7);
+        findID.put(new int[]{1,1}, R.id.B7);
+        findID.put(new int[]{1,2}, R.id.C7);
+        findID.put(new int[]{1,3}, R.id.D7);
+        findID.put(new int[]{1,4}, R.id.E7);
+        findID.put(new int[]{1,5}, R.id.F7);
+        findID.put(new int[]{1,6}, R.id.G7);
+        findID.put(new int[]{1,7}, R.id.H7);
+
+        // third row inputted to HashMap
+        findID.put(new int[]{2,0}, R.id.A6);
+        findID.put(new int[]{2,1}, R.id.B6);
+        findID.put(new int[]{2,2}, R.id.C6);
+        findID.put(new int[]{2,3}, R.id.D6);
+        findID.put(new int[]{2,4}, R.id.E6);
+        findID.put(new int[]{2,5}, R.id.F6);
+        findID.put(new int[]{2,6}, R.id.G6);
+        findID.put(new int[]{2,7}, R.id.H6);
+
+        // fourth row inputted to HashMap
+        findID.put(new int[]{3,0}, R.id.A5);
+        findID.put(new int[]{3,1}, R.id.B5);
+        findID.put(new int[]{3,2}, R.id.C5);
+        findID.put(new int[]{3,3}, R.id.D5);
+        findID.put(new int[]{3,4}, R.id.E5);
+        findID.put(new int[]{3,5}, R.id.F5);
+        findID.put(new int[]{3,6}, R.id.G5);
+        findID.put(new int[]{3,7}, R.id.H5);
+
+        // fifth row inputted to HashMap
+        findID.put(new int[]{4,0}, R.id.A4);
+        findID.put(new int[]{4,1}, R.id.B4);
+        findID.put(new int[]{4,2}, R.id.C4);
+        findID.put(new int[]{4,3}, R.id.D4);
+        findID.put(new int[]{4,4}, R.id.E4);
+        findID.put(new int[]{4,5}, R.id.F4);
+        findID.put(new int[]{4,6}, R.id.G4);
+        findID.put(new int[]{4,7}, R.id.H4);
+
+        // sixth row inputted to HashMap
+        findID.put(new int[]{5,0}, R.id.A3);
+        findID.put(new int[]{5,1}, R.id.B3);
+        findID.put(new int[]{5,2}, R.id.C3);
+        findID.put(new int[]{5,3}, R.id.D3);
+        findID.put(new int[]{5,4}, R.id.E3);
+        findID.put(new int[]{5,5}, R.id.F3);
+        findID.put(new int[]{5,6}, R.id.G3);
+        findID.put(new int[]{5,7}, R.id.H3);
+
+        // seventh row inputted to HashMap
+        findID.put(new int[]{6,0}, R.id.A2);
+        findID.put(new int[]{6,1}, R.id.B2);
+        findID.put(new int[]{6,2}, R.id.C2);
+        findID.put(new int[]{6,3}, R.id.D2);
+        findID.put(new int[]{6,4}, R.id.E2);
+        findID.put(new int[]{6,5}, R.id.F2);
+        findID.put(new int[]{6,6}, R.id.G2);
+        findID.put(new int[]{6,7}, R.id.H2);
+
+        // eighth row inputted to HashMap
+        findID.put(new int[]{7,0}, R.id.A1);
+        findID.put(new int[]{7,1}, R.id.B1);
+        findID.put(new int[]{7,2}, R.id.C1);
+        findID.put(new int[]{7,3}, R.id.D1);
+        findID.put(new int[]{7,4}, R.id.E1);
+        findID.put(new int[]{7,5}, R.id.F1);
+        findID.put(new int[]{7,6}, R.id.G1);
+        findID.put(new int[]{7,7}, R.id.H1);
+
         return pieces;
     }
     
