@@ -10,10 +10,11 @@ public class Move {
     boolean turn;
     Piece capturedPiece;
     boolean firstMove;
+    boolean enPassant;
 
     public Move(int originalSquareRow, int originalSquareCol, int originalID, int newLocRow,
-                int newLocCol, int newID, boolean whiteTurn, boolean enPassantPossible,
-                boolean enPassantMove, boolean castlingMove, Piece capturedPiece, boolean pawnPromotion,
+                int newLocCol, int newID, boolean whiteTurn,
+                boolean enPassant, boolean castlingMove, Piece capturedPiece, boolean pawnPromotion,
                 boolean firstMove) {
         this.originalSquareRow = originalSquareRow;
         this.originalSquareCol = originalSquareCol;
@@ -24,6 +25,8 @@ public class Move {
         this.turn = whiteTurn;
         this.capturedPiece = capturedPiece;
         this.firstMove  = firstMove;
+        this.enPassant = enPassant;
+
 
     }
 
