@@ -130,7 +130,7 @@ public class Game extends AppCompatActivity {
 
                 // opens dialog for user to handle promotion when applicable (and handles the rest of promotion there)
                 if(board.board[destRow][destCol] instanceof Pawn && (destRow==0 || destRow==7)){
-                    promotionDialog(PlayChessGame.this, sourceRow, sourceCol, destRow, destCol, !whiteTurn, capturedPiece, id, firstMove);
+                    promotionDialog(Game.this, sourceRow, sourceCol, destRow, destCol, !whiteTurn, capturedPiece, id, firstMove);
                     return;
                 }
 
@@ -225,7 +225,7 @@ public class Game extends AppCompatActivity {
             }
             else {
 
-                Toast.makeText(PlayChessGame.this, "Illegal Move", Toast.LENGTH_LONG).show();
+                Toast.makeText(Game.this, "Illegal Move", Toast.LENGTH_LONG).show();
             }
             firstClick.clear();
         }

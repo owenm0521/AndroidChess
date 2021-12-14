@@ -10,6 +10,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Chess">
         <activity
+            android:name=".Replay"
+            android:exported="false" />
+        <activity
             android:name=".previousGames"
             android:exported="false" />
         <activity

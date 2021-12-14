@@ -135,7 +135,6 @@ public class Board {
 	 * @param playerTurn either w or b representing white's turn or black's turn respectively
 	 * @param source original location of piece
 	 * @param dest potential new location of piece
-	 * @param promotion pawns potential promotion as a string which if not provided is defaulted to Queen
 	 * @return true if move is legal or false if not
 	 */
 	public boolean checkBoard(Piece[][] board, Character playerTurn, Point source, Point dest) {
@@ -445,7 +444,7 @@ public class Board {
 				curr_piece = board[i][j]; 
 				if(board[i][j].getName().charAt(0) != player_to_check && !board[i][j].getType().equals("Free Space")) {
 					Point source = new Point(i, j);
-					check = (curr_piece.check_move(source.row, source.col, king_row, king_col) && checkBoard(board, opponent, source, dest, "Q")); // playerTurn = !playerTurn
+					check = (curr_piece.check_move(source.row, source.col, king_row, king_col) && checkBoard(board, opponent, source, dest)); // playerTurn = !playerTurn
 					if (check) break;
 				}
 			}
@@ -513,7 +512,7 @@ public class Board {
 				if(board[i][j].getName().charAt(0) != playerTurn && !board[i][j].getType().equals("Free Space")) {
 					Piece p = board[i][j]; 
 					boolean pieceLegal = p.check_move(i, j, kingPos.row, kingPos.col);
-					boolean boardLegal = checkBoard(board, opponent, new Point(i, j), kingPos, "Q");
+					boolean boardLegal = checkBoard(board, opponent, new Point(i, j), kingPos);
 					if(pieceLegal && boardLegal) {
 						checkPiece = p;
 						checkPiecePos.row = i; 
@@ -634,7 +633,7 @@ public class Board {
 					Piece p = board[i][j]; 
 					for(Point move : movesToBlock) {
 						boolean pieceLegal = p.check_move(i, j, move.row, move.col);
-						boolean boardLegal = checkBoard(board, playerTurn, new Point(i, j), move, "Q");
+						boolean boardLegal = checkBoard(board, playerTurn, new Point(i, j), move);
 						if(pieceLegal && boardLegal) {
 							checkmate = false; 
 							return checkmate;  
@@ -647,17 +646,7 @@ public class Board {
 		return checkmate; 
 	}
 	
-	/**
-	 * First checks if move is legal by bounds, your piece, and new locaition is on board.
-	 * Then checks if it is legal by piece, board legality, and then checks for checks.
-	 * Finally prints updated board or throws "Illegal move, try again"
-	 * 
-	 * @param playerTurn
-	 * @param s
-	 * @param d
-	 * @param promotion
-	 * @return
-	 */
+
 	public boolean move(Character playerTurn, int sourceRow, int sourceCol, int destRow, int destCol, ArrayList<Piece> capturedPiece) {
 		//String to point
 		Point source = new Point(sourceRow, sourceCol);
