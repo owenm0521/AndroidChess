@@ -134,7 +134,7 @@ public class Game extends AppCompatActivity {
 
                 // opens dialog for user to handle promotion when applicable (and handles the rest of promotion there)
                 if(board.board[destRow][destCol] instanceof Pawn && (destRow==0 || destRow==7)){
-                    promotionDialog(Game.this, sourceRow, sourceCol, destRow, destCol, !whiteTurn, capturedPiece, id, firstMove);
+                    promotion(Game.this, sourceRow, sourceCol, destRow, destCol, !whiteTurn, capturedPiece, id, firstMove);
                     return;
                 }
 
@@ -157,7 +157,7 @@ public class Game extends AppCompatActivity {
 
                 updateUserView(destRow, destCol, id);
             }
-            else if(enPassantPossible && board.enPassantValid(sourceRow, sourceCol, destRow, destCol, whiteTurn)) {
+            else if(enPassantPossible && board.enPassantMove(playerTurn, sourceRow, sourceCol, destRow, destCol, capturedPiece)) {
                 if(whiteTurn)
                     whiteTurn=false;
                 else {
@@ -299,6 +299,64 @@ public class Game extends AppCompatActivity {
             }
             gameOver(Game.this);
         }
+    }
+
+    public void promotion(Context c, int sourceRow, int sourceCol, int destRow, int destCol, boolean whiteTurn,
+                                 ArrayList<Piece> capturedPiece, int id, boolean firstMove){
+        android.app.AlertDialog.Builder buildPromotionList = new android.app.AlertDialog.Builder(c);
+        buildPromotionList.setTitle("Promote pawn to one of the following pieces:");
+        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(c, android.R.layout.select_dialog_singlechoice);
+        arrayAdapter.add("Queen");
+        arrayAdapter.add("Rook");
+        arrayAdapter.add("Bishop");
+        arrayAdapter.add("Knight");
+        String color = whiteTurn ? "white" : "black";
+        buildPromotionList.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String strName = arrayAdapter.getItem(which);
+
+                if(strName.equals("Queen")){
+                    board.board[destRow][destCol] = new Queen(color);
+                } else if(strName.equals("Rook")){
+                    board.board[destRow][destCol] = new Rook(color);
+                } else if(strName.equals("Bishop")){
+                    board.board[destRow][destCol] = new Bishop(color);
+                } else if(strName.equals("Knight")){
+                    board.board[destRow][destCol] = new Knight(color);
+                }
+
+                /*
+                board.inCheck = board.checkCheck((whiteTurn));
+                board.inCheckMate = board.checkCheckMate(whiteTurn);
+                */
+
+                Piece pieceCaptured = null;
+                if(capturedPiece.size()>0) pieceCaptured = capturedPiece.get(0);
+
+                boolean castlingMove = false;
+
+                // records whether a piece's first move was changed
+                boolean firstMoveChanged = firstMove != board.board[destRow][destCol].getmoved();
+
+                //add this move to the list of moves (this currently assumes no pawn promotion)
+                moves.add(new Move(sourceRow, sourceCol, firstClick.get(2), destRow, destCol, id,
+                        whiteTurn, enPassantPossible, false, castlingMove,
+                        pieceCaptured, true, firstMoveChanged, board.board[destRow][destCol]));
+
+                updateUserView(destRow, destCol, id);
+
+                firstClick.clear();
+            }
+        });
+        Dialog d = buildPromotionList.setView(new View(c)).create();
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.copyFrom(d.getWindow().getAttributes());
+        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+        lp.height = WindowManager.LayoutParams.MATCH_PARENT;
+        d.show();
+        d.getWindow().setAttributes(lp);
+        //Log.d("savedGames: ", SavedGames.userSavedGames.toString());
     }
 
 
