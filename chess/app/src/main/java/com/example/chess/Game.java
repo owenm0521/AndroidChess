@@ -96,9 +96,147 @@ public class Game extends AppCompatActivity {
     }
 
     public void move(int row, int col, int id){
-        int frow = firstClick.get(0);
-        int fcol = firstClick.get(1);
+        if(firstClick.size()>0){
+
+            int sourceRow = firstClick.get(0);
+            int sourceCol = firstClick.get(1);
+
+
+
+            int destCol = col;
+            int destRow = row;
+
+            ArrayList<Piece> capturedPiece = new ArrayList<Piece>();
+
+            // stores Pieces's current firstMove value
+            boolean firstMove = false;
+            if(board.board[sourceRow][sourceCol]!=null){
+                firstMove = board.board[sourceRow][sourceCol].firstMove;
+            }
+
+            Character playerTurn = whiteTurn ? 'w' : 'b';
+
+            if(board.move(playerTurn, sourceRow, sourceCol, destRow, destCol, capturedPiece)) {
+                if(whiteTurn)
+                    whiteTurn=false;
+                else
+                    whiteTurn = true;
+                if((sourceRow == destRow+2 || sourceRow == destRow-2) && sourceCol==destCol && board.board[destRow][destCol] instanceof Pawn) {
+                    enPassantPossible = true;
+                }
+                else {
+                    enPassantPossible = false;
+                }
+
+                // opens dialog for user to handle promotion when applicable (and handles the rest of promotion there)
+                if(board.board[destRow][destCol] instanceof Pawn && (destRow==0 || destRow==7)){
+                    promotionDialog(PlayChessGame.this, sourceRow, sourceCol, destRow, destCol, !whiteTurn, capturedPiece, id, firstMove);
+                    return;
+                }
+
+
+                Piece pieceCaptured = null;
+                if(capturedPiece.size()>0) pieceCaptured = capturedPiece.get(0);
+
+                boolean castlingMove = false;
+                if(Math.abs(sourceCol-destCol)==2 && board.board[destRow][destCol] instanceof King){
+                    castlingMove = true;
+                }
+
+                // records whether a piece's first move was changed
+                boolean firstMoveChanged = firstMove != board.board[destRow][destCol].firstMove;
+
+                //add this move to the list of moves
+                moves.add(new Move(sourceRow, sourceCol, firstClick.get(2), destRow, destCol, id,
+                        !whiteTurn, enPassantPossible, false, castlingMove,
+                        pieceCaptured, false, firstMoveChanged));
+
+                updateUserView(destRow, destCol, id);
+            }
+            else if(enPassantPossible && board.enPassantValid(sourceRow, sourceCol, destRow, destCol, whiteTurn)) {
+                if(whiteTurn)
+                    whiteTurn=false;
+                else {
+                    whiteTurn = true;
+                }
+                enPassantPossible=false;
+
+                updateUserView(destRow, destCol, id);
+
+                // add this move to the list of moves
+                moves.add(new Move(sourceRow, sourceCol, firstClick.get(2), destRow, destCol, id,
+                        !whiteTurn, enPassantPossible, true, false,
+                        null, false, false));
+
+                //handle the visuals of the pawn piece that was captured
+                //handle en passants along row 6 (on the chessboard)
+                if(destRow==2 && destCol==0){
+                    ImageButton capturedPawn = (ImageButton) findViewById(R.id.A5);
+                    capturedPawn.setImageResource(0);
+                } else if(destRow==2 && destCol==1){
+                    ImageButton capturedPawn = (ImageButton) findViewById(R.id.B5);
+                    capturedPawn.setImageResource(0);
+                } else if(destRow==2 && destCol==2){
+                    ImageButton capturedPawn = (ImageButton) findViewById(R.id.C5);
+                    capturedPawn.setImageResource(0);
+                } else if(destRow==2 && destCol==3){
+                    ImageButton capturedPawn = (ImageButton) findViewById(R.id.D5);
+                    capturedPawn.setImageResource(0);
+                } else if(destRow==2 && destCol==4){
+                    ImageButton capturedPawn = (ImageButton) findViewById(R.id.E5);
+                    capturedPawn.setImageResource(0);
+                } else if(destRow==2 && destCol==5){
+                    ImageButton capturedPawn = (ImageButton) findViewById(R.id.F5);
+                    capturedPawn.setImageResource(0);
+                } else if(destRow==2 && destCol==6){
+                    ImageButton capturedPawn = (ImageButton) findViewById(R.id.G5);
+                    capturedPawn.setImageResource(0);
+                } else if(destRow==2 && destCol==7){
+                    ImageButton capturedPawn = (ImageButton) findViewById(R.id.H5);
+                    capturedPawn.setImageResource(0);
+                }
+                // handle en passants along row 3 (on the chessboard)
+                if(destRow==5 && destCol==0){
+                    ImageButton capturedPawn = (ImageButton) findViewById(R.id.A4);
+                    capturedPawn.setImageResource(0);
+                } else if(destRow==5 && destCol==1){
+                    ImageButton capturedPawn = (ImageButton) findViewById(R.id.B4);
+                    capturedPawn.setImageResource(0);
+                } else if(destRow==5 && destCol==2){
+                    ImageButton capturedPawn = (ImageButton) findViewById(R.id.C4);
+                    capturedPawn.setImageResource(0);
+                } else if(destRow==5 && destCol==3){
+                    ImageButton capturedPawn = (ImageButton) findViewById(R.id.D4);
+                    capturedPawn.setImageResource(0);
+                } else if(destRow==5 && destCol==4){
+                    ImageButton capturedPawn = (ImageButton) findViewById(R.id.E4);
+                    capturedPawn.setImageResource(0);
+                } else if(destRow==5 && destCol==5){
+                    ImageButton capturedPawn = (ImageButton) findViewById(R.id.F4);
+                    capturedPawn.setImageResource(0);
+                } else if(destRow==5 && destCol==6){
+                    ImageButton capturedPawn = (ImageButton) findViewById(R.id.G4);
+                    capturedPawn.setImageResource(0);
+                } else if(destRow==5 && destCol==7){
+                    ImageButton capturedPawn = (ImageButton) findViewById(R.id.H4);
+                    capturedPawn.setImageResource(0);
+                }
+
+            }
+            else {
+
+                Toast.makeText(PlayChessGame.this, "Illegal Move", Toast.LENGTH_LONG).show();
+            }
+            firstClick.clear();
+        }
+        else{
+            firstClick.add(row);
+            firstClick.add(col);
+            firstClick.add(id);
+
+        }
     }
+
 
     public void undoMove(){
         if(moves.size() < 1){

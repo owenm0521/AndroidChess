@@ -138,7 +138,7 @@ public class Board {
 	 * @param promotion pawns potential promotion as a string which if not provided is defaulted to Queen
 	 * @return true if move is legal or false if not
 	 */
-	public boolean checkBoard(Piece[][] board, Character playerTurn, Point source, Point dest, String promotion) {
+	public boolean checkBoard(Piece[][] board, Character playerTurn, Point source, Point dest) {
 		Piece sourcePiece = board[source.row][source.col];
 		Piece destPiece = board[dest.row][dest.col];
 		
@@ -267,11 +267,13 @@ public class Board {
 					return false;
 				}
 			}
+			/*
 			if(Math.abs(source.row - dest.row) == 1) {
 				if(!board[dest.row][dest.col].getType().equals("King")) {
 					updatePawn(playerTurn, source, dest, promotion);
 				}
 			}
+			*/
 			return true; 
 		}
 		
@@ -378,6 +380,7 @@ public class Board {
 	 * @param dest future location of pawn
 	 * @param promotion the promotion string should be 'N' 'R' 'B' or 'Q' depending on promotion type
 	 */
+	/*
 	public void updatePawn(Character playerTurn, Point source, Point dest, String promotion) {
 		String newPieceType = promotion;
 		if( (playerTurn == 'b' && dest.row == 7) || (playerTurn == 'w' && dest.row == 0) ) {
@@ -403,6 +406,7 @@ public class Board {
 		board[source.row][source.col] = piece; 
 		return; 
 	}
+	*/
 	
 	/**
 	 * when checknum is 0, checks to see if player's move will put themself in check before allowing move to be completed; 
@@ -654,10 +658,10 @@ public class Board {
 	 * @param promotion
 	 * @return
 	 */
-	public boolean move(Character playerTurn, String s, String d, String promotion) {
+	public boolean move(Character playerTurn, int sourceRow, int sourceCol, int destRow, int destCol, ArrayList<Piece> capturedPiece) {
 		//String to point
-		Point source = new Point(s); 
-		Point dest = new Point(d); 
+		Point source = new Point(sourceRow, sourceCol);
+		Point dest = new Point(destRow, destCol);
 		
 		//check piece is on board
 		if(source.row < 0 || source.row > 8 || source.col == -1) {
@@ -682,7 +686,7 @@ public class Board {
 		
 		
 		boolean pieceLegal = piece.check_move(source.row, source.col, dest.row, dest.col); // -> conditional, check legality of move by piece type
-		boolean boardLegal = checkBoard(board, playerTurn, source, dest, promotion); // -> conditional, check legality of move by availability of board spaces 
+		boolean boardLegal = checkBoard(board, playerTurn, source, dest); // -> conditional, check legality of move by availability of board spaces
 		int checkNum = 0; // 0 = check if player's move puts themself in check (temp), 1 = check if player's move puts opponent in check (board)
 			//if legal - pass move to update board 
 		if(pieceLegal && boardLegal) {
@@ -697,6 +701,9 @@ public class Board {
 			tempBoard = updateBoard(tempBoard, source, dest);
 			
 			if(!check(tempBoard, playerTurn, checkNum)) {
+				if(!board[dest.row][dest.col].getType().equals("Free Space")) {
+					capturedPiece.add(board[dest.row][dest.col]);
+				}
 				board = updateBoard(board, source, dest); 
 				checkNum++; 
 			}
