@@ -135,7 +135,6 @@ public class Board {
 	 * @param playerTurn either w or b representing white's turn or black's turn respectively
 	 * @param source original location of piece
 	 * @param dest potential new location of piece
-	 * @param promotion pawns potential promotion as a string which if not provided is defaulted to Queen
 	 * @return true if move is legal or false if not
 	 */
 	public boolean checkBoard(Piece[][] board, Character playerTurn, Point source, Point dest) {
@@ -758,17 +757,7 @@ public class Board {
 		return checkmate; 
 	}
 	
-	/**
-	 * First checks if move is legal by bounds, your piece, and new locaition is on board.
-	 * Then checks if it is legal by piece, board legality, and then checks for checks.
-	 * Finally prints updated board or throws "Illegal move, try again"
-	 * 
-	 * @param playerTurn
-	 * @param s
-	 * @param d
-	 * @param promotion
-	 * @return
-	 */
+
 	public boolean move(Character playerTurn, int sourceRow, int sourceCol, int destRow, int destCol, ArrayList<Piece> capturedPiece) {
 		//String to point
 		Point source = new Point(sourceRow, sourceCol);

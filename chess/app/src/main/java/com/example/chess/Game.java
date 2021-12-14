@@ -150,7 +150,7 @@ public class Game extends AppCompatActivity {
 
                 //add this move to the list of moves
                 moves.add(new Move(sourceRow, sourceCol, firstClick.get(2), destRow, destCol, id,
-                        !whiteTurn, enPassantPossible, false, castlingMove,
+                        !whiteTurn, false, castlingMove,
                         pieceCaptured, false, firstMoveChanged));
 
                 updateUserView(destRow, destCol, id);
@@ -167,7 +167,7 @@ public class Game extends AppCompatActivity {
 
                 // add this move to the list of moves
                 moves.add(new Move(sourceRow, sourceCol, firstClick.get(2), destRow, destCol, id,
-                        !whiteTurn, enPassantPossible, true, false,
+                        !whiteTurn, true, false,
                         null, false, false));
 
                 //handle the visuals of the pawn piece that was captured
@@ -365,20 +365,135 @@ public class Game extends AppCompatActivity {
 
         Move moveToUndo = moves.remove(moves.size()-1);
         Piece originalPiece = board.board[moveToUndo.newLocRow][moveToUndo.newLocCol];
+        String temp_color = originalPiece.getName();
         if(originalPiece.getType() == "Pawn" && (moveToUndo.newLocCol == 7 || moveToUndo.newLocCol == 0)){
-            String color = originalPiece.getName();
-            originalPiece = new Pawn(color);
+            originalPiece = new Pawn(temp_color);
             originalPiece.setmoved(6);
         }
         if(originalPiece.getType() == "King" && Math.abs(moveToUndo.originalSquareRow - moveToUndo.newLocRow) == 2){
-            if(moveToUndo.originalSquareRow == 0){
+            ImageButton kingsCurrent = null;
+            ImageButton rooksCurrent = null;
+            ImageButton originalKing = null;
+            ImageButton originalRook = null;
 
+            if(moveToUndo.originalSquareRow == 0){
+                if(moveToUndo.newLocCol==6){
+
+                    board.board[0][6] = null;
+                    kingsCurrent = (ImageButton) findViewById(R.id.G8);
+                    board.board[0][5] = null;
+                    rooksCurrent = (ImageButton) findViewById(R.id.F8);
+                    board.board[0][7] = new Rook(temp_color);
+                    originalRook = (ImageButton) findViewById(R.id.H8);
+                }
+                //castling left
+                if(moveToUndo.newLocCol==2){
+                    board.board[0][2] = null;
+                    kingsCurrent = (ImageButton) findViewById(R.id.C8);
+                    board.board[0][3] = null;
+                    rooksCurrent = (ImageButton) findViewById(R.id.D8);
+                    board.board[0][0] = new Rook(temp_color);
+                    originalRook = (ImageButton) findViewById(R.id.A8);
+                }
+                board.board[0][4] = new King(temp_color);
+                originalKing = (ImageButton) findViewById(R.id.E8);
             }
             else{
+                if(moveToUndo.newLocCol==6){
+                    board.board[7][6] = null;
+                    kingsCurrent = (ImageButton) findViewById(R.id.G1);
+                    board.board[7][5] = null;
+                    rooksCurrent = (ImageButton) findViewById(R.id.F1);
+                    board.board[7][7] = new Rook(temp_color);
+                    originalRook = (ImageButton) findViewById(R.id.H1);
+                }
+                //castling left
+                if(moveToUndo.newLocCol==2){
+                    board.board[7][2] = null;
+                    kingsCurrent = (ImageButton) findViewById(R.id.C1);
+                    board.board[7][3] = null;
+                    rooksCurrent = (ImageButton) findViewById(R.id.D1);
+                    board.board[7][0] = new Rook(temp_color);
+                    originalRook = (ImageButton) findViewById(R.id.A1);
+                }
+                board.board[7][4] = new King(temp_color);
+                originalKing = (ImageButton) findViewById(R.id.E1);
+            }
+            kingsCurrent.setImageResource(0);
+            rooksCurrent.setImageResource(0);
+            originalRook.setImageResource(pieces.get((new Rook(temp_color).toString())));
+            originalKing.setImageResource(pieces.get((new King(temp_color).toString())));
+            return;
+        }
 
+        if(moveToUndo.enPassant == true){
+            Piece movedPawn = board.board[moveToUndo.newLocRow][moveToUndo.newLocCol];
+            board.board[moveToUndo.originalSquareRow][moveToUndo.originalSquareCol] = movedPawn;
+            board.board[moveToUndo.newLocRow][moveToUndo.newLocCol] = null;
+            String color = movedPawn.getColor() == 'w' ? "black" : "white";
+            Pawn capturedPawn = new Pawn(color);
+            capturedPawn.num_moves = 0;
+            board.board[moveToUndo.originalSquareRow][moveToUndo.newLocCol] = capturedPawn;
+            enPassantPossible = false;
+            // sets enPassantPossible to the previous value, if that value exists
+            
+            whiteTurn = moveToUndo.isTurn();
+
+            ImageButton startPosition = (ImageButton)findViewById(moveToUndo.originalID);
+            startPosition.setImageResource(0);
+            if(board.board[moveToUndo.originalSquareRow][moveToUndo.originalSquareCol]!=null){
+                startPosition.setImageResource(pieces.get(board.board[moveToUndo.originalSquareRow][moveToUndo.originalSquareCol].toString()));
+            }
+            ImageButton endPosition = (ImageButton)findViewById(moveToUndo.newID);
+            endPosition.setImageResource(0);
+            if(board.board[moveToUndo.newLocRow][moveToUndo.newLocCol]!=null){
+                endPosition.setImageResource(pieces.get(board.board[moveToUndo.newLocRow][moveToUndo.newLocCol].toString()));
+            }
+
+            if(moveToUndo.originalSquareRow==3){
+                ImageButton capturedPawnPosition = null;
+                if(moveToUndo.newLocCol==0){
+                    capturedPawnPosition = (ImageButton) findViewById(R.id.A5);
+                } else if(moveToUndo.newLocCol==1){
+                    capturedPawnPosition = (ImageButton) findViewById(R.id.B5);
+                } else if(moveToUndo.newLocCol==2){
+                    capturedPawnPosition = (ImageButton) findViewById(R.id.C5);
+                } else if(moveToUndo.newLocCol==3){
+                    capturedPawnPosition = (ImageButton) findViewById(R.id.D5);
+                } else if(moveToUndo.newLocCol==4){
+                    capturedPawnPosition = (ImageButton) findViewById(R.id.E5);
+                } else if(moveToUndo.newLocCol==5){
+                    capturedPawnPosition = (ImageButton) findViewById(R.id.F5);
+                } else if(moveToUndo.newLocCol==6){
+                    capturedPawnPosition = (ImageButton) findViewById(R.id.G5);
+                } else if(moveToUndo.newLocCol==7){
+                    capturedPawnPosition = (ImageButton) findViewById(R.id.H5);
+                }
+                capturedPawnPosition.setImageResource(R.drawable.bp);
+            } else if(moveToUndo.originalSquareRow==4){
+                ImageButton capturedPawnPosition = null;
+                if(moveToUndo.newLocCol==0){
+                    capturedPawnPosition = (ImageButton) findViewById(R.id.A4);
+                } else if(moveToUndo.newLocCol==1){
+                    capturedPawnPosition = (ImageButton) findViewById(R.id.B4);
+                } else if(moveToUndo.newLocCol==2){
+                    capturedPawnPosition = (ImageButton) findViewById(R.id.C4);
+                } else if(moveToUndo.newLocCol==3){
+                    capturedPawnPosition = (ImageButton) findViewById(R.id.D4);
+                } else if(moveToUndo.newLocCol==4){
+                    capturedPawnPosition = (ImageButton) findViewById(R.id.E4);
+                } else if(moveToUndo.newLocCol==5){
+                    capturedPawnPosition = (ImageButton) findViewById(R.id.F4);
+                } else if(moveToUndo.newLocCol==6){
+                    capturedPawnPosition = (ImageButton) findViewById(R.id.G4);
+                } else if(moveToUndo.newLocCol==7){
+                    capturedPawnPosition = (ImageButton) findViewById(R.id.H4);
+                }
+                capturedPawnPosition.setImageResource(R.drawable.wp);
             }
             return;
         }
+
         board.board[moveToUndo.originalSquareRow][moveToUndo.originalSquareCol] = originalPiece;
         board.board[moveToUndo.newLocRow][moveToUndo.newLocCol] = moveToUndo.capturedPiece;
         whiteTurn = moveToUndo.isTurn();
