@@ -18,7 +18,7 @@ public class Board {
 	 */
 	Player white; 
 	Player black; 
-	Piece[][] board; 
+	Piece[][] board;
 	/**
 	 * Constructs the board for the game to begin
 	 * 
@@ -238,6 +238,9 @@ public class Board {
 		if(sourcePiece.getType().equals("Pawn")) {
 			if(board[dest.row][dest.col].getType().equals("Free Space")) {
 				if(diagonal) {
+
+
+					/*
 					// If diagonal movement check if the piece on its right or left are pawns
 					if(board[source.row][dest.col].getType().equals("Pawn") && board[source.row][dest.col].getColor() != board[source.row][source.col].getColor()) {
 						//check if en passant is legal
@@ -253,6 +256,9 @@ public class Board {
 					else {
 						return false; 
 					}
+					*/
+
+					return false;
 				}
 			}
 			else {
@@ -358,6 +364,37 @@ public class Board {
 		}
 		return true; 
 	}
+
+	public boolean enPassantValid(Piece[][] board, Character playerTurn, int sourceRow, int sourceCol, int destRow, int destCol){
+		Piece sourcePiece = board[sourceRow][sourceCol];
+		Piece destPiece = board[destRow][destCol];
+
+		boolean diagonal = false;
+		if( !(destRow == sourceRow) && !(destCol == sourceCol)) {
+			diagonal = true;
+		}
+
+		if(sourcePiece.getType().equals("Pawn")) {
+			if (board[destRow][destCol].getType().equals("Free Space")) {
+				if (diagonal) {
+					// If diagonal movement check if the piece on its right or left are pawns
+					if (board[sourceRow][destCol].getType().equals("Pawn") && board[sourceRow][destCol].getColor() != board[sourceRow][sourceCol].getColor()) {
+						//check if en passant is legal
+						if (((Pawn) board[sourceRow][destCol]).getEnPassant()) {
+							board[sourceRow][destCol] = new FreeSpace(sourceRow, destCol);
+							if (playerTurn == 'b') {
+								white.pieces.remove(destPiece);
+							} else {
+								black.pieces.remove(destPiece);
+							}
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
 	
 	/**
 	 * checks is given point is within the bounds of board array
@@ -370,6 +407,80 @@ public class Board {
 		}
 		return true; 
 	}
+
+	public boolean enPassantMove(Character playerTurn, int sourceRow, int sourceCol, int destRow, int destCol, ArrayList<Piece> capturedPiece) {
+		//String to point
+		Point source = new Point(sourceRow, sourceCol);
+		Point dest = new Point(destRow, destCol);
+
+		//check piece is on board
+		if(source.row < 0 || source.row > 8 || source.col == -1) {
+			System.out.println("Illegal move, try again");
+			return false;
+		}
+
+		//get piece
+		Piece piece = board[source.row][source.col];
+
+		//check that source piece corresponds with player piece
+		if(piece.getName().charAt(0) != playerTurn) {
+			System.out.println("Illegal move, try again");
+			return false;
+		}
+
+		//check dest is on board
+		if(dest.row < 0 || dest.row > 8 || dest.col == -1) {
+			System.out.println("Illegal move, try again");
+			return false;
+		}
+
+
+		boolean pieceLegal = piece.check_move(source.row, source.col, dest.row, dest.col); // -> conditional, check legality of move by piece type
+		boolean boardLegal = enPassantValid(board, playerTurn, source.row, source.col, dest.row, dest.col); // -> conditional, check legality of move by availability of board spaces
+		int checkNum = 0; // 0 = check if player's move puts themself in check (temp), 1 = check if player's move puts opponent in check (board)
+		//if legal - pass move to update board
+		if(pieceLegal && boardLegal) {
+
+			//create copy of board
+			Piece[][] tempBoard = createBoard();
+			for(int i = 0; i < tempBoard.length; i++) {
+				for(int j = 0; j < tempBoard[i].length; j++) {
+					tempBoard[i][j] = board[i][j];
+				}
+			}
+			tempBoard = updateBoard(tempBoard, source, dest);
+
+			if(!check(tempBoard, playerTurn, checkNum)) {
+				// board[source.row][source.col].setmoved();
+				if(!board[dest.row][dest.col].getType().equals("Free Space")) {
+					capturedPiece.add(board[dest.row][dest.col]);
+				}
+				board = updateBoard(board, source, dest);
+				checkNum++;
+			}
+			else {
+				System.out.println("Illegal move, try again");
+				return false;
+			}
+		}
+		//if illegal - exception/warning message
+		else {
+			System.out.println("Illegal move, try again");
+			return false;
+		}
+
+		//print updated board
+		printBoard();
+
+		// check if opponent is in check
+		if(check(board, playerTurn, checkNum) && !checkmate(playerTurn == 'w' ? 'b' : 'w')){
+			System.out.println("Check");
+		}
+
+		return true;
+	}
+
+
 	
 	/**
 	 * Once pawn reaches end of the board this method promotes the pawn to a higher piece class
@@ -445,7 +556,7 @@ public class Board {
 				curr_piece = board[i][j]; 
 				if(board[i][j].getName().charAt(0) != player_to_check && !board[i][j].getType().equals("Free Space")) {
 					Point source = new Point(i, j);
-					check = (curr_piece.check_move(source.row, source.col, king_row, king_col) && checkBoard(board, opponent, source, dest, "Q")); // playerTurn = !playerTurn
+					check = (curr_piece.check_move(source.row, source.col, king_row, king_col) && checkBoard(board, opponent, source, dest)); // playerTurn = !playerTurn
 					if (check) break;
 				}
 			}
@@ -513,7 +624,7 @@ public class Board {
 				if(board[i][j].getName().charAt(0) != playerTurn && !board[i][j].getType().equals("Free Space")) {
 					Piece p = board[i][j]; 
 					boolean pieceLegal = p.check_move(i, j, kingPos.row, kingPos.col);
-					boolean boardLegal = checkBoard(board, opponent, new Point(i, j), kingPos, "Q");
+					boolean boardLegal = checkBoard(board, opponent, new Point(i, j), kingPos);
 					if(pieceLegal && boardLegal) {
 						checkPiece = p;
 						checkPiecePos.row = i; 
@@ -634,7 +745,7 @@ public class Board {
 					Piece p = board[i][j]; 
 					for(Point move : movesToBlock) {
 						boolean pieceLegal = p.check_move(i, j, move.row, move.col);
-						boolean boardLegal = checkBoard(board, playerTurn, new Point(i, j), move, "Q");
+						boolean boardLegal = checkBoard(board, playerTurn, new Point(i, j), move);
 						if(pieceLegal && boardLegal) {
 							checkmate = false; 
 							return checkmate;  
@@ -686,7 +797,8 @@ public class Board {
 		
 		
 		boolean pieceLegal = piece.check_move(source.row, source.col, dest.row, dest.col); // -> conditional, check legality of move by piece type
-		boolean boardLegal = checkBoard(board, playerTurn, source, dest); // -> conditional, check legality of move by availability of board spaces
+		boolean boardLegal = checkBoard(board, playerTurn, source, dest);
+		//enPassantValid(board, playerTurn, source.row, source.col, dest.row, dest.col); // -> conditional, check legality of move by availability of board spaces
 		int checkNum = 0; // 0 = check if player's move puts themself in check (temp), 1 = check if player's move puts opponent in check (board)
 			//if legal - pass move to update board 
 		if(pieceLegal && boardLegal) {
