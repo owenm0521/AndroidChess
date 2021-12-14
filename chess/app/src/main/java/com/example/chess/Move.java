@@ -3,22 +3,22 @@ package com.example.chess;
 public class Move {
     int originalSquareRow;
     int originalSquareCol;
-    int firstClickID;
+    int originalID;
     int newLocRow;
     int newLocCol;
-    int secondClickID;
+    int newID;
     boolean turn;
 
-    public Move(int originalSquareRow, int originalSquareCol, int firstClickID, int newLocRow,
-                int newLocCol, int secondClickID, boolean whiteTurn, boolean enPassantPossible,
+    public Move(int originalSquareRow, int originalSquareCol, int originalID, int newLocRow,
+                int newLocCol, int newID, boolean whiteTurn, boolean enPassantPossible,
                 boolean enPassantMove, boolean castlingMove, Piece capturedPiece, boolean pawnPromotion,
                 boolean firstMoveChanged) {
         this.originalSquareRow = originalSquareRow;
         this.originalSquareCol = originalSquareCol;
-        this.firstClickID = firstClickID;
+        this.originalID = originalID;
         this.newLocRow = newLocRow;
         this.newLocCol = newLocCol;
-        this.secondClickID = secondClickID;
+        this.newID = newID;
         this.turn = turn;
     }
 
@@ -30,8 +30,8 @@ public class Move {
         return originalSquareCol;
     }
 
-    public int getFirstClickID() {
-        return firstClickID;
+    public int getoriginalID() {
+        return originalID;
     }
 
     public int getNewLocRow() {
@@ -42,8 +42,8 @@ public class Move {
         return newLocCol;
     }
 
-    public int getSecondClickID() {
-        return secondClickID;
+    public int getnewID() {
+        return newID;
     }
 
     public boolean isTurn() {
