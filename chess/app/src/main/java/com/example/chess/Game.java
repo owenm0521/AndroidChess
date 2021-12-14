@@ -3,6 +3,7 @@ package com.example.chess;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,6 +11,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -111,7 +113,7 @@ public class Game extends AppCompatActivity {
             // stores Pieces's current firstMove value
             boolean firstMove = false;
             if(board.board[sourceRow][sourceCol]!=null){
-                firstMove = board.board[sourceRow][sourceCol].firstMove;
+                firstMove = board.board[sourceRow][sourceCol].getmoved();
             }
 
             Character playerTurn = whiteTurn ? 'w' : 'b';
@@ -130,7 +132,7 @@ public class Game extends AppCompatActivity {
 
                 // opens dialog for user to handle promotion when applicable (and handles the rest of promotion there)
                 if(board.board[destRow][destCol] instanceof Pawn && (destRow==0 || destRow==7)){
-                    promotionDialog(PlayChessGame.this, sourceRow, sourceCol, destRow, destCol, !whiteTurn, capturedPiece, id, firstMove);
+                    promotionDialog(Game.this, sourceRow, sourceCol, destRow, destCol, !whiteTurn, capturedPiece, id, firstMove);
                     return;
                 }
 
@@ -144,7 +146,7 @@ public class Game extends AppCompatActivity {
                 }
 
                 // records whether a piece's first move was changed
-                boolean firstMoveChanged = firstMove != board.board[destRow][destCol].firstMove;
+                boolean firstMoveChanged = firstMove != board.board[destRow][destCol].getmoved();
 
                 //add this move to the list of moves
                 moves.add(new Move(sourceRow, sourceCol, firstClick.get(2), destRow, destCol, id,
@@ -225,7 +227,7 @@ public class Game extends AppCompatActivity {
             }
             else {
 
-                Toast.makeText(PlayChessGame.this, "Illegal Move", Toast.LENGTH_LONG).show();
+                Toast.makeText(Game.this, "Illegal Move", Toast.LENGTH_LONG).show();
             }
             firstClick.clear();
         }
@@ -234,6 +236,66 @@ public class Game extends AppCompatActivity {
             firstClick.add(col);
             firstClick.add(id);
 
+        }
+    }
+
+    public void updateUserView(int destRow, int destCol, int id){
+
+        ImageButton firstPiece = (ImageButton)findViewById(firstClick.get(2));
+        firstPiece.setImageResource(0);
+
+
+        // handle castling first
+        if(board.board[destRow][destCol] instanceof King && Math.abs(firstClick.get(1)-destCol)==2){
+            ImageButton secondPiece = (ImageButton)findViewById(id);
+            // castling black E8 --> C8
+            if(destCol==2 && destRow==0){
+                secondPiece.setImageResource(R.drawable.bk);
+                ImageButton movingRook = (ImageButton)findViewById(R.id.A8);
+                movingRook.setImageResource(0);
+                ImageButton movingRookDestination = (ImageButton)findViewById(R.id.D8);
+                movingRookDestination.setImageResource(R.drawable.br);
+            }
+            // castling black E8 --> G8
+            if(destCol==6 && destRow==0){
+                secondPiece.setImageResource(R.drawable.bk);
+                ImageButton movingRook = (ImageButton)findViewById(R.id.H8);
+                movingRook.setImageResource(0);
+                ImageButton movingRookDestination = (ImageButton)findViewById(R.id.F8);
+                movingRookDestination.setImageResource(R.drawable.br);
+            }
+            // castling white E1 --> G1
+            if(destCol==6 && destRow==7){
+                secondPiece.setImageResource(R.drawable.wk);
+                ImageButton movingRook = (ImageButton)findViewById(R.id.H1);
+                movingRook.setImageResource(0);
+                ImageButton movingRookDestination = (ImageButton)findViewById(R.id.F1);
+                movingRookDestination.setImageResource(R.drawable.wr);
+            }
+            // castling white E1 --> C1
+            if(destCol==2 && destRow==7){
+                secondPiece.setImageResource(R.drawable.wk);
+                ImageButton movingRook = (ImageButton)findViewById(R.id.A1);
+                movingRook.setImageResource(0);
+                ImageButton movingRookDestination = (ImageButton)findViewById(R.id.D1);
+                movingRookDestination.setImageResource(R.drawable.wr);
+            }
+            return;
+        }
+
+        // updates virtual board's appearance using pieceToKey hashmap
+        ImageButton secondPiece = (ImageButton)findViewById(id);
+        secondPiece.setImageResource(pieces.get(board.board[destRow][destCol].toString()));
+
+        Character playerTurn = whiteTurn ? 'w' : 'b';
+        if (board.checkmate(playerTurn)) {
+            if (!whiteTurn) {
+                Toast.makeText(Game.this,"CheckMate, White Wins", Toast.LENGTH_LONG).show();
+            } else {
+                //System.out.println("Black wins");
+                Toast.makeText(Game.this,"CheckMate, Black Wins", Toast.LENGTH_LONG).show();
+            }
+            gameOver(Game.this);
         }
     }
 

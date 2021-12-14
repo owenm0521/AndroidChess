@@ -701,6 +701,7 @@ public class Board {
 			tempBoard = updateBoard(tempBoard, source, dest);
 			
 			if(!check(tempBoard, playerTurn, checkNum)) {
+				// board[source.row][source.col].setmoved();
 				if(!board[dest.row][dest.col].getType().equals("Free Space")) {
 					capturedPiece.add(board[dest.row][dest.col]);
 				}
