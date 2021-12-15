@@ -3,10 +3,12 @@
  */
 package com.example.chess;
 
+import java.io.Serializable;
+
 /**
  * Queen class for the Queen piece
  */
-public class Queen implements Piece {
+public class Queen implements Piece, Serializable {
 	/**
 	 * name the name of the piece specified by color and type
 	 * type the type of piece

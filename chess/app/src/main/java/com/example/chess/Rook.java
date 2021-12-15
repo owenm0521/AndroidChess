@@ -3,10 +3,12 @@
  */
 package com.example.chess;
 
+import java.io.Serializable;
+
 /**
  * Rook class for the rook piece
  */
-public class Rook implements Piece {
+public class Rook implements Piece, Serializable {
 	/**
 	 * name the name of the piece specified by color and type
 	 * type the type of piece

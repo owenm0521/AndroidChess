@@ -1,6 +1,8 @@
 package com.example.chess;
 
-public class Move {
+import java.io.Serializable;
+
+public class Move implements Serializable {
     int originalSquareRow;
     int originalSquareCol;
     int originalID;

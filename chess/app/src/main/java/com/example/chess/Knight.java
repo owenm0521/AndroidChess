@@ -3,10 +3,13 @@
  */
 
 package com.example.chess;
+
+import java.io.Serializable;
+
 /**
  * Knight class for the knight piece of the board
  */
-public class Knight implements Piece {
+public class Knight implements Piece, Serializable {
 	/** 
 	 * name the name of the piece specified by color and type
 	 * type the type of piece

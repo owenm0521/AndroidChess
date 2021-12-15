@@ -4,10 +4,12 @@
 
 package com.example.chess;
 
+import java.io.Serializable;
+
 /**
  * King class for the king piece of the board
  */
-public class Pawn implements Piece {
+public class Pawn implements Piece, Serializable {
 	
 	
 	/**

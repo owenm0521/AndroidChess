@@ -31,7 +31,7 @@ public class Replay extends AppCompatActivity {
     private ArrayList<String> arrayList;
 
     boolean enPassantPossible = false;
-    // holds details of User's first click: first element is row num, second element is col num,
+    // holds details of User's first click: first element is destRow num, second element is col num,
     // this element is ID of the square that was clicked
     private ArrayList<Integer> firstClick = new ArrayList<Integer>();
     // stores all the moves in this game
@@ -65,15 +65,24 @@ public class Replay extends AppCompatActivity {
     }
 
     public void move(Move move){
-        int sourceRow = move.originalSquareRow;
-        int sourceCol = move.originalSquareCol;
-        int destCol = move.newLocCol;
-        int destRow = move.newLocRow;
+        int startRow = move.originalSquareRow;
+        int startCol = move.originalSquareCol;
+        int endCol = move.newLocCol;
+        int endRow = move.newLocRow;
         boolean whiteTurn = move.isTurn();
+        boolean enPassantPossible = move.enPassant;
         boolean enPassantMove = move.enPassant;
-        boolean firstMoveChanged = move.firstMove;
         int id = move.newID;
         int firstClickID = move.originalID;
+
+
+            int sourceRow = startRow;
+            int sourceCol = startCol;
+
+
+
+            int destCol = endCol;
+            int destRow = endRow;
 
             ArrayList<Piece> capturedPiece = new ArrayList<Piece>();
 
@@ -82,14 +91,14 @@ public class Replay extends AppCompatActivity {
             if(board.board[sourceRow][sourceCol]!=null){
                 firstMove = board.board[sourceRow][sourceCol].getmoved();
             }
-
+            Log.e("firstclick", sourceRow + " " + sourceCol + " " + firstClick.get(2));
+            Log.e("secondclick", destRow + " " + destCol + " " + id);
             Character playerTurn = whiteTurn ? 'w' : 'b';
 
             if(board.move(playerTurn, sourceRow, sourceCol, destRow, destCol, capturedPiece)) {
-                if(whiteTurn)
-                    whiteTurn=false;
-                else
-                    whiteTurn = true;
+                Log.e("games", "legal");
+                whiteTurn = !whiteTurn;
+
                 if((sourceRow == destRow+2 || sourceRow == destRow-2) && sourceCol==destCol && board.board[destRow][destCol] instanceof Pawn) {
                     enPassantPossible = true;
                 }
@@ -99,12 +108,15 @@ public class Replay extends AppCompatActivity {
 
                 // opens dialog for user to handle promotion when applicable (and handles the rest of promotion there)
                 if(board.board[destRow][destCol] instanceof Pawn && (destRow==0 || destRow==7)){
+                    if(capturedPiece.size() < 1){
+                        capturedPiece.add(new FreeSpace(destRow, destCol));
+                    }
                     promotion(Replay.this, sourceRow, sourceCol, destRow, destCol, !whiteTurn, capturedPiece, id, firstMove);
                     return;
                 }
 
 
-                Piece pieceCaptured = null;
+                Piece pieceCaptured = new FreeSpace(destRow, destCol);
                 if(capturedPiece.size()>0) pieceCaptured = capturedPiece.get(0);
 
                 boolean castlingMove = false;
@@ -112,8 +124,11 @@ public class Replay extends AppCompatActivity {
                     castlingMove = true;
                 }
 
+                // records whether a piece's first move was changed
+                boolean firstMoveChanged = firstMove != board.board[destRow][destCol].getmoved();
 
                 //add this move to the list of moves
+                Log.e("move",destRow+" "+destCol);
                 moves.add(new Move(sourceRow, sourceCol, firstClick.get(2), destRow, destCol, id,
                         !whiteTurn, false,
                         pieceCaptured, false, firstMoveChanged));
@@ -132,11 +147,11 @@ public class Replay extends AppCompatActivity {
 
                 // add this move to the list of moves
                 moves.add(new Move(sourceRow, sourceCol, firstClick.get(2), destRow, destCol, id,
-                        !whiteTurn,  false,
+                        !whiteTurn,  true,
                         null, false, false));
 
                 //handle the visuals of the pawn piece that was captured
-                //handle en passants along row 6 (on the chessboard)
+                //handle en passants along destRow 6 (on the chessboard)
                 if(destRow==2 && destCol==0){
                     ImageButton capturedPawn = (ImageButton) findViewById(R.id.A5);
                     capturedPawn.setImageResource(0);
@@ -162,7 +177,7 @@ public class Replay extends AppCompatActivity {
                     ImageButton capturedPawn = (ImageButton) findViewById(R.id.H5);
                     capturedPawn.setImageResource(0);
                 }
-                // handle en passants along row 3 (on the chessboard)
+                // handle en passants along destRow 3 (on the chessboard)
                 if(destRow==5 && destCol==0){
                     ImageButton capturedPawn = (ImageButton) findViewById(R.id.A4);
                     capturedPawn.setImageResource(0);
@@ -194,7 +209,7 @@ public class Replay extends AppCompatActivity {
 
                 Toast.makeText(Replay.this, "Illegal Move", Toast.LENGTH_LONG).show();
             }
-            firstClick.clear();
+
     }
 
     public void updateUserView(int destRow, int destCol, int id){
@@ -243,7 +258,12 @@ public class Replay extends AppCompatActivity {
 
         // updates virtual board's appearance using pieceToKey hashmap
         ImageButton secondPiece = (ImageButton)findViewById(id);
-        secondPiece.setImageResource(pieces.get(board.board[destRow][destCol].toString()));
+        int temp = destRow;
+        destRow = destCol;
+        destCol = temp;
+        destRow = 7-destRow;
+        Log.e("updateView",destRow+" "+destCol);
+        secondPiece.setImageResource(pieces.get(board.board[destRow][destCol].getName()));
 
         Character playerTurn = whiteTurn ? 'w' : 'b';
         if (board.checkmate(playerTurn)) {

@@ -528,159 +528,48 @@ public class Game extends AppCompatActivity {
     }
 
     public void AIMove(){
+        boolean moveFound = false;
+        int srow = 0;
+        int scol = 0;
+        int drow = 0;
+        int dcol=0;
         for(int i = 0; i < board.board.length; i++){
             for(int j = 0; j < board.board[i].length;j++){
                 Piece pp = board.board[i][j];
-                if(pp.getType() != "Free Space"){
+                if(!pp.getType().equals("Free Space")){
                     Character c = pp.getColor();
                     if((whiteTurn == false && c == 'b') || (whiteTurn == true && c == 'w')){
                         for(int a = 0; a<board.board.length; a++) {
                             for (int b = 0; b < board.board[a].length; b++) {
-                                ArrayList<Piece> capturedPiece = new ArrayList<Piece>();
-                                ArrayList<Integer> startMatrixPos = new ArrayList<Integer>();
-                                startMatrixPos.add(i);
-                                startMatrixPos.add(j);
-                                ArrayList<Integer> endMatrixPos = new ArrayList<Integer>();
-                                endMatrixPos.add(a);
-                                endMatrixPos.add(b);
-                                int startID = findID.get(startMatrixPos);
-                                int endID = findID.get(endMatrixPos);
-                                firstClick.add(i); firstClick.add(j); firstClick.add(startID);
-
-
-
-                                if(board.move(c, i, j, a, b, capturedPiece)) {
-                                    if(whiteTurn)
-                                        whiteTurn=false;
-                                    else
-                                        whiteTurn = true;
-                                    if((i == a+2 || i == a-2) && j==b && board.board[a][b] instanceof Pawn) {
-                                        enPassantPossible = true;
-                                    }
-                                    else {
-                                        enPassantPossible = false;
-                                    }
-
-                                    // CHANGE PROMOTION FOR AI
-                                    if(board.board[a][b] instanceof Pawn && (a==0 || a==7)){
-
-                                        board.board[a][b] = new Queen(c.toString());
-
-                                        Piece pieceCaptured = null;
-                                        if(capturedPiece.size()>0) pieceCaptured = capturedPiece.get(0);
-
-                                        boolean castlingMove = false;
-
-
-                                        //add this move to the list of moves
-                                        moves.add(new Move(i, j, startID, a, b, endID,
-                                                !whiteTurn, false,
-                                                pieceCaptured, true, false, board.board[a][b]));
-
-                                        updateUserView(a, b, endID);
-
-                                        firstClick.clear();
-                                        return;
-                                    }
-
-
-                                    Piece pieceCaptured = null;
-                                    if(capturedPiece.size()>0) pieceCaptured = capturedPiece.get(0);
-
-                                    boolean castlingMove = false;
-                                    if(Math.abs(j-b)==2 && board.board[a][b] instanceof King){
-                                        castlingMove = true;
-                                    }
-
-
-                                    //add this move to the list of moves
-                                    moves.add(new Move(i, j, startID, a, b, endID,
-                                            !whiteTurn, false,
-                                            pieceCaptured, false, false));
-
-                                    updateUserView(a, b, endID);
-                                    firstClick.clear();
-                                    return;
-                                } else if(enPassantPossible && board.enPassantValid(board.board, c, i, j, a, b)) {
-                                    if(whiteTurn)
-                                        whiteTurn=false;
-                                    else {
-                                        whiteTurn = true;
-                                    }
-                                    enPassantPossible=false;
-
-                                    updateUserView(a, b, endID);
-
-                                    // add this move to the list of moves
-                                    moves.add(new Move(i, j, startID, a, b, endID,
-                                            !whiteTurn, true,
-                                            null, false, false));
-
-                                    //handle the visuals of the pawn piece that was captured
-                                    //handle en passants along row 6 (on the chessboard)
-                                    if(a==2 && b==0){
-                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.A5);
-                                        capturedPawn.setImageResource(0);
-                                    } else if(a==2 && b==1){
-                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.B5);
-                                        capturedPawn.setImageResource(0);
-                                    } else if(a==2 && b==2){
-                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.C5);
-                                        capturedPawn.setImageResource(0);
-                                    } else if(a==2 && b==3){
-                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.D5);
-                                        capturedPawn.setImageResource(0);
-                                    } else if(a==2 && b==4){
-                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.E5);
-                                        capturedPawn.setImageResource(0);
-                                    } else if(a==2 && b==5){
-                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.F5);
-                                        capturedPawn.setImageResource(0);
-                                    } else if(a==2 && b==6){
-                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.G5);
-                                        capturedPawn.setImageResource(0);
-                                    } else if(a==2 && b==7){
-                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.H5);
-                                        capturedPawn.setImageResource(0);
-                                    }
-                                    // handle en passants along row 3 (on the chessboard)
-                                    if(a==5 && b==0){
-                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.A4);
-                                        capturedPawn.setImageResource(0);
-                                    } else if(a==5 && b==1){
-                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.B4);
-                                        capturedPawn.setImageResource(0);
-                                    } else if(a==5 && b==2){
-                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.C4);
-                                        capturedPawn.setImageResource(0);
-                                    } else if(a==5 && b==3){
-                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.D4);
-                                        capturedPawn.setImageResource(0);
-                                    } else if(a==5 && b==4){
-                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.E4);
-                                        capturedPawn.setImageResource(0);
-                                    } else if(a==5 && b==5){
-                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.F4);
-                                        capturedPawn.setImageResource(0);
-                                    } else if(a==5 && b==6){
-                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.G4);
-                                        capturedPawn.setImageResource(0);
-                                    } else if(a==5 && b==7){
-                                        ImageButton capturedPawn = (ImageButton) findViewById(R.id.H4);
-                                        capturedPawn.setImageResource(0);
-                                    }
-                                    firstClick.clear();
-                                    return;
+                                if(board.move(c,i, j, a, b, null)){
+                                    moveFound = true;
+                                    srow = i;
+                                    scol = j;
+                                    drow = a;
+                                    dcol = b;
+                                    break;
                                 }
-
-                                firstClick.clear();
                             }
-                        }
+                            if(moveFound){
+                                break;
+                            }
+                            }
                     }
 
                 }
+                if(moveFound){
+                    break;
+                }
+            }
+            if(moveFound){
+                break;
             }
         }
+        firstClick.clear();
+        firstClick.add(srow);
+        firstClick.add(scol);
+        firstClick.add(findID.get(new int[]{srow, scol}));
+        move(drow, dcol, findID.get(new int[]{drow, dcol}));
     }
 
     public void gameOver(Context context){

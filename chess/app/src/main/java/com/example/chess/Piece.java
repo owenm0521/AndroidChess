@@ -1,5 +1,6 @@
 package com.example.chess;
 
+
 public interface Piece {
 	public String getName(); 
 	public String getType(); 

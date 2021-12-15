@@ -3,10 +3,12 @@
  */
 package com.example.chess;
 
+import java.io.Serializable;
+
 /**
  * Free space class for the spaces on the board where there are no pieces
  */
-public class FreeSpace implements Piece{
+public class FreeSpace implements Piece, Serializable{
 	/**
 	 * name the name of the piece specified by color and type
 	 * type the type of piece

@@ -710,6 +710,6 @@
         android:layout_below="@+id/GridLayout"
         android:layout_marginLeft="400px"
         android:layout_marginTop="21dp"
-        android:text="Draw" />
+        android:text="Next Move" />
 
 </RelativeLayout>
