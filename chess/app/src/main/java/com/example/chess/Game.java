@@ -27,6 +27,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 
 public class Game extends AppCompatActivity {
@@ -53,7 +54,7 @@ public class Game extends AppCompatActivity {
         board.createBoard();
         board.populateBoard();
 
-        populateBoard(pieces);
+        this.pieces = populateBoard(pieces);
         createbuttons();
 
         Button AIMoveButton = (Button) findViewById(R.id.AIMove);
@@ -117,14 +118,14 @@ public class Game extends AppCompatActivity {
             if(board.board[sourceRow][sourceCol]!=null){
                 firstMove = board.board[sourceRow][sourceCol].getmoved();
             }
-            Log.e("games", row + " " + col + " " + id);
+            Log.e("firstclick", sourceRow + " " + sourceCol + " " + firstClick.get(2));
+            Log.e("secondclick", row + " " + col + " " + id);
             Character playerTurn = whiteTurn ? 'w' : 'b';
 
             if(board.move(playerTurn, sourceRow, sourceCol, destRow, destCol, capturedPiece)) {
-                if(whiteTurn)
-                    whiteTurn=false;
-                else
-                    whiteTurn = true;
+                Log.e("games", "legal");
+                whiteTurn = !whiteTurn;
+
                 if((sourceRow == destRow+2 || sourceRow == destRow-2) && sourceCol==destCol && board.board[destRow][destCol] instanceof Pawn) {
                     enPassantPossible = true;
                 }
@@ -286,6 +287,11 @@ public class Game extends AppCompatActivity {
 
         // updates virtual board's appearance using pieceToKey hashmap
         ImageButton secondPiece = (ImageButton)findViewById(id);
+        int temp = destRow;
+        destRow = destCol;
+        destCol = destRow;
+        destRow = 7- destRow;
+        Log.e("updateView",destRow+" "+destCol);
         secondPiece.setImageResource(pieces.get(board.board[destRow][destCol].toString()));
 
         Character playerTurn = whiteTurn ? 'w' : 'b';
@@ -740,13 +746,13 @@ public class Game extends AppCompatActivity {
     }
     
     public HashMap<String, Integer> populateBoard(HashMap<String, Integer> pieces){
-        pieces.put("wp",R.drawable.wp);
+        pieces.put("wP",R.drawable.wp);
         pieces.put("wB",R.drawable.wb);
         pieces.put("wQ",R.drawable.wq);
         pieces.put("wR",R.drawable.wr);
         pieces.put("wN",R.drawable.wn);
         pieces.put("wK",R.drawable.wk);
-        pieces.put("bp",R.drawable.bp);
+        pieces.put("bP",R.drawable.bp);
         pieces.put("bB",R.drawable.bb);
         pieces.put("bQ",R.drawable.bq);
         pieces.put("bR",R.drawable.br);
@@ -833,6 +839,7 @@ public class Game extends AppCompatActivity {
         findID.put(new int[]{7,6}, R.id.G1);
         findID.put(new int[]{7,7}, R.id.H1);
 
+        Log.e("pieces","pieces created");
         return pieces;
     }
     
@@ -1313,5 +1320,14 @@ public class Game extends AppCompatActivity {
                 move(7, 7, h8.getId());
             }
         });
+    }
+
+    public void cipher(int row, int col, int id){
+        int temp = row;
+        row = col;
+        col = temp;
+        row = 7 - row;
+
+
     }
 }

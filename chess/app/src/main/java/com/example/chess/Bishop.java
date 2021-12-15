@@ -21,7 +21,7 @@ public class Bishop implements Piece {
 	 * @param color what color the piece is
 	 */
 	public Bishop (String color) {
-		this.name = "" + color.charAt(0) + type.charAt(0) + " "; 
+		this.name = "" + color.charAt(0) + type.charAt(0);
 	}
 	
 	/**

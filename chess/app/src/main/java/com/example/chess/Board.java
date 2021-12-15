@@ -3,6 +3,8 @@
  */
 package com.example.chess;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -760,6 +762,16 @@ public class Board {
 
 	public boolean move(Character playerTurn, int sourceRow, int sourceCol, int destRow, int destCol, ArrayList<Piece> capturedPiece) {
 		//String to point
+		int temp = sourceRow;
+		sourceRow = sourceCol;
+		sourceCol = temp;
+		sourceRow = 7-sourceRow;
+
+		temp = destRow;
+		destRow = destCol;
+		destCol = temp;
+		destRow = 7-destRow;
+
 		Point source = new Point(sourceRow, sourceCol);
 		Point dest = new Point(destRow, destCol);
 		
@@ -768,25 +780,20 @@ public class Board {
 			System.out.println("Illegal move, try again");
 			return false; 
 		}
-		
+		Log.e("boardMove","passed piece on board");
 		//get piece 
-		Piece piece = board[source.row][source.col]; 
-		
-		//check that source piece corresponds with player piece 
-		if(piece.getName().charAt(0) != playerTurn) {
-			System.out.println("Illegal move, try again"); 
-			return false; 
-		}
-		
+		Piece piece = board[source.row][source.col];
+		Log.e("boardMove","passed onside");
 		//check dest is on board
 		if(dest.row < 0 || dest.row > 8 || dest.col == -1) {
 			System.out.println("Illegal move, try again");
 			return false; 
 		}
-		
-		
+		Log.e("boardMove","passed dest on board");
+		Log.e("boardMOve", source.row+" "+source.col+" "+dest.row+" "+dest.col+" "+ piece.getColor()+" "+piece.getType());
 		boolean pieceLegal = piece.check_move(source.row, source.col, dest.row, dest.col); // -> conditional, check legality of move by piece type
 		boolean boardLegal = checkBoard(board, playerTurn, source, dest);
+		Log.e("boardMove",pieceLegal +" "+boardLegal);
 		//enPassantValid(board, playerTurn, source.row, source.col, dest.row, dest.col); // -> conditional, check legality of move by availability of board spaces
 		int checkNum = 0; // 0 = check if player's move puts themself in check (temp), 1 = check if player's move puts opponent in check (board)
 			//if legal - pass move to update board 

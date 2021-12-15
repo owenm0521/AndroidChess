@@ -37,7 +37,7 @@ public class Pawn implements Piece {
 	 * @param color the color of the pawn
 	 */
 	public Pawn (String color) {
-		this.name = "" + color.charAt(0) + type.charAt(0) + " "; 
+		this.name = "" + color.charAt(0) + type.charAt(0);
 	}
 	
 	/**
@@ -145,5 +145,7 @@ public class Pawn implements Piece {
 		num_moves = n;
 	}
 
-
+	public String toString(){
+		return this.name;
+	}
 }

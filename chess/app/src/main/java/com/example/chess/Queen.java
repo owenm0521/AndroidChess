@@ -20,7 +20,7 @@ public class Queen implements Piece {
 	 * @param color what color the piece is
 	 */
 	public Queen (String color) {
-		this.name = "" + color.charAt(0) + type.charAt(0) + " "; 
+		this.name = "" + color.charAt(0) + type.charAt(0);
 	}
 	
 	/**
