@@ -117,7 +117,7 @@ public class Game extends AppCompatActivity {
             if(board.board[sourceRow][sourceCol]!=null){
                 firstMove = board.board[sourceRow][sourceCol].getmoved();
             }
-
+            Log.e("games", row + " " + col + " " + id);
             Character playerTurn = whiteTurn ? 'w' : 'b';
 
             if(board.move(playerTurn, sourceRow, sourceCol, destRow, destCol, capturedPiece)) {
@@ -152,7 +152,7 @@ public class Game extends AppCompatActivity {
 
                 //add this move to the list of moves
                 moves.add(new Move(sourceRow, sourceCol, firstClick.get(2), destRow, destCol, id,
-                        !whiteTurn, false, castlingMove,
+                        !whiteTurn, false,
                         pieceCaptured, false, firstMoveChanged));
 
                 updateUserView(destRow, destCol, id);
@@ -169,7 +169,7 @@ public class Game extends AppCompatActivity {
 
                 // add this move to the list of moves
                 moves.add(new Move(sourceRow, sourceCol, firstClick.get(2), destRow, destCol, id,
-                        !whiteTurn, true, false,
+                        !whiteTurn,  false,
                         null, false, false));
 
                 //handle the visuals of the pawn piece that was captured
@@ -237,7 +237,6 @@ public class Game extends AppCompatActivity {
             firstClick.add(row);
             firstClick.add(col);
             firstClick.add(id);
-
         }
     }
 
@@ -341,7 +340,7 @@ public class Game extends AppCompatActivity {
 
                 //add this move to the list of moves (this currently assumes no pawn promotion)
                 moves.add(new Move(sourceRow, sourceCol, firstClick.get(2), destRow, destCol, id,
-                        whiteTurn, enPassantPossible, false, castlingMove,
+                        whiteTurn, false,
                         pieceCaptured, true, firstMoveChanged, board.board[destRow][destCol]));
 
                 updateUserView(destRow, destCol, id);
@@ -553,23 +552,18 @@ public class Game extends AppCompatActivity {
                                     // CHANGE PROMOTION FOR AI
                                     if(board.board[a][b] instanceof Pawn && (a==0 || a==7)){
 
-                                        board.board[a][b] = new Queen(!whiteTurn);
-
-                                        board.check = board.check(board.board, c, 1);
-                                        board.checkMate = board.checkmate(c);
+                                        board.board[a][b] = new Queen(c.toString());
 
                                         Piece pieceCaptured = null;
                                         if(capturedPiece.size()>0) pieceCaptured = capturedPiece.get(0);
 
                                         boolean castlingMove = false;
 
-                                        // records whether a piece's first move was changed
-                                        boolean firstMoveChanged = firstMove != board.board[a][b].firstMove;
 
                                         //add this move to the list of moves
                                         moves.add(new Move(i, j, startID, a, b, endID,
                                                 !whiteTurn, false,
-                                                pieceCaptured, true, firstMoveChanged, board.board[a][b]));
+                                                pieceCaptured, true, false, board.board[a][b]));
 
                                         updateUserView(a, b, endID);
 
@@ -586,18 +580,16 @@ public class Game extends AppCompatActivity {
                                         castlingMove = true;
                                     }
 
-                                    // records whether a piece's first move was changed
-                                    boolean firstMoveChanged = firstMove != board.board[a][b].firstMove;
 
                                     //add this move to the list of moves
                                     moves.add(new Move(i, j, startID, a, b, endID,
                                             !whiteTurn, false,
-                                            pieceCaptured, false, firstMoveChanged));
+                                            pieceCaptured, false, false));
 
                                     updateUserView(a, b, endID);
                                     firstClick.clear();
                                     return;
-                                } else if(enPassantPossible && board.enPassantValid(i, j, a, b, whiteTurn)) {
+                                } else if(enPassantPossible && board.enPassantValid(board.board, c, i, j, a, b)) {
                                     if(whiteTurn)
                                         whiteTurn=false;
                                     else {

@@ -3,18 +3,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#00000"
+    android:background="#FFFFFFFF"
     >
 
     <GridLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="720px"
+        android:layout_height="720px"
         android:id="@+id/GridLayout"
-        android:layout_width="332dp"
-        android:layout_height="275dp"
-        android:layout_marginLeft="150px"
-        android:layout_marginTop="300px"
-        android:columnCount="8"
         android:orientation="vertical"
         android:rowCount="8"
+        android:columnCount="8"
+        android:layout_marginLeft="20px"
         tools:context=".PlayChessGame">
 
         <!--    first column-->

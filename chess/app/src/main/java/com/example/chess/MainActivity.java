@@ -17,8 +17,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        startGame = findViewById(R.id.startGame);
-        viewOldGame = findViewById(R.id.oldGames);
+        startGame = findViewById(R.id.newGame);
+        viewOldGame = findViewById(R.id.replay);
 
         startGame.setOnClickListener(new View.OnClickListener() {
             @Override

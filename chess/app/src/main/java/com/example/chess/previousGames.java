@@ -34,14 +34,14 @@ public class previousGames extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_previous_games);
+        setContentView(R.layout.activity_saved_game);
         sortByName = (Button)findViewById(R.id.sortByName);
         sortByDate = (Button)findViewById(R.id.sortByDate);
         gamesList = (ListView)findViewById(R.id.gamesList);
 
         names = new ArrayList<String>();
         dates = new ArrayList<Date>();
-
+        arrayList = new ArrayList<String>();
         arrayAdapt = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_spinner_item, arrayList);
 
         games = readGames();
@@ -51,19 +51,16 @@ public class previousGames extends AppCompatActivity {
             arrayList.add(s.toString());
         }
 
-        gamesList.setAdapter(arrayAdapt);
-        arrayAdapt.notifyDataSetChanged();
-
         sortByName.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 sort(names, arrayList, games, dates);
-                Log.d("First in list", ""+arrayList.get(0));
                 gamesList.setAdapter(arrayAdapt);
                 arrayAdapt.notifyDataSetChanged();
                 gamesList.refreshDrawableState();
             }
         });
+
         sortByDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -73,6 +70,9 @@ public class previousGames extends AppCompatActivity {
                 gamesList.refreshDrawableState();
             }
         });
+
+        gamesList.setAdapter(arrayAdapt);
+        arrayAdapt.notifyDataSetChanged();
 
 
         gamesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
