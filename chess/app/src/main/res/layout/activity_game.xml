@@ -285,7 +285,7 @@
             android:adjustViewBounds="true"
             android:background="#C4A484"
             android:scaleType="fitCenter"
-            android:src="@drawable/bp"
+            android:src="@drawable/bq"
             tools:layout_editor_absoluteX="12dp"
             tools:layout_editor_absoluteY="136dp" />
 

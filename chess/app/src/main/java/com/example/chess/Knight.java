@@ -20,7 +20,7 @@ public class Knight implements Piece {
 	 * @param color what color the piece is
 	 */
 	public Knight (String color) {
-		this.name = "" + color.charAt(0) + "N "; 
+		this.name = "" + color.charAt(0) + "N";
 	}
 	
 	/**

@@ -37,9 +37,7 @@ public class Game extends AppCompatActivity {
     private ArrayList<Integer> firstClick = new ArrayList<Integer>();
     private ArrayList<Move> moves = new ArrayList<Move>();
     private HashMap<String, Integer> pieces = new HashMap<String, Integer>();
-    private boolean gameOn = true;
     private boolean whiteTurn = true;
-    private boolean printBoard = true;
     private boolean enPassantPossible = false;
     boolean resign=false;
     boolean draw=false;
@@ -135,12 +133,15 @@ public class Game extends AppCompatActivity {
 
                 // opens dialog for user to handle promotion when applicable (and handles the rest of promotion there)
                 if(board.board[destRow][destCol] instanceof Pawn && (destRow==0 || destRow==7)){
+                    if(capturedPiece.size() < 1){
+                        capturedPiece.add(new FreeSpace(destRow, destCol));
+                    }
                     promotion(Game.this, sourceRow, sourceCol, destRow, destCol, !whiteTurn, capturedPiece, id, firstMove);
                     return;
                 }
 
 
-                Piece pieceCaptured = null;
+                Piece pieceCaptured = new FreeSpace(destRow, destCol);
                 if(capturedPiece.size()>0) pieceCaptured = capturedPiece.get(0);
 
                 boolean castlingMove = false;
@@ -152,6 +153,7 @@ public class Game extends AppCompatActivity {
                 boolean firstMoveChanged = firstMove != board.board[destRow][destCol].getmoved();
 
                 //add this move to the list of moves
+                Log.e("move",destRow+" "+destCol);
                 moves.add(new Move(sourceRow, sourceCol, firstClick.get(2), destRow, destCol, id,
                         !whiteTurn, false,
                         pieceCaptured, false, firstMoveChanged));
@@ -170,7 +172,7 @@ public class Game extends AppCompatActivity {
 
                 // add this move to the list of moves
                 moves.add(new Move(sourceRow, sourceCol, firstClick.get(2), destRow, destCol, id,
-                        !whiteTurn,  false,
+                        !whiteTurn,  true,
                         null, false, false));
 
                 //handle the visuals of the pawn piece that was captured
@@ -289,10 +291,10 @@ public class Game extends AppCompatActivity {
         ImageButton secondPiece = (ImageButton)findViewById(id);
         int temp = destRow;
         destRow = destCol;
-        destCol = destRow;
-        destRow = 7- destRow;
+        destCol = temp;
+        destRow = 7-destRow;
         Log.e("updateView",destRow+" "+destCol);
-        secondPiece.setImageResource(pieces.get(board.board[destRow][destCol].toString()));
+        secondPiece.setImageResource(pieces.get(board.board[destRow][destCol].getName()));
 
         Character playerTurn = whiteTurn ? 'w' : 'b';
         if (board.checkmate(playerTurn)) {
@@ -371,13 +373,15 @@ public class Game extends AppCompatActivity {
         }
 
         Move moveToUndo = moves.remove(moves.size()-1);
-        Piece originalPiece = board.board[moveToUndo.newLocRow][moveToUndo.newLocCol];
+        Log.e("undoMove", moveToUndo.newLocRow+" "+ moveToUndo.newLocRow);
+        Piece originalPiece = board.board[moveToUndo.newLocRow][moveToUndo.newLocRow];
+        Log.e("undoMove", originalPiece.getName());
         String temp_color = originalPiece.getName();
-        if(originalPiece.getType() == "Pawn" && (moveToUndo.newLocCol == 7 || moveToUndo.newLocCol == 0)){
+        if(originalPiece.getType().equals("Pawn") && (moveToUndo.newLocCol == 7 || moveToUndo.newLocCol == 0)){
             originalPiece = new Pawn(temp_color);
             originalPiece.setmoved(6);
         }
-        if(originalPiece.getType() == "King" && Math.abs(moveToUndo.originalSquareRow - moveToUndo.newLocRow) == 2){
+        if(originalPiece.getType().equals("King") && Math.abs(moveToUndo.originalSquareRow - moveToUndo.newLocRow) == 2){
             ImageButton kingsCurrent = null;
             ImageButton rooksCurrent = null;
             ImageButton originalKing = null;
@@ -509,15 +513,17 @@ public class Game extends AppCompatActivity {
         }
         ImageButton ogSquare = (ImageButton)findViewById(moveToUndo.originalID);
         ogSquare.setImageResource(0);
-        if(board.board[moveToUndo.originalSquareRow][moveToUndo.originalSquareCol].getType() == "Free Space"){
-            ogSquare.setImageResource(pieces.get(board.board[moveToUndo.originalSquareRow][moveToUndo.originalSquareCol].toString()));
-        }
+        ogSquare.setImageResource(pieces.get(board.board[moveToUndo.originalSquareRow][moveToUndo.originalSquareCol].getName()));
 
         // initially makes end Position blank, then fills in a piece there if one exists
         ImageButton newSquare = (ImageButton)findViewById(moveToUndo.newID);
         newSquare.setImageResource(0);
-        if(board.board[moveToUndo.newLocRow][moveToUndo.newLocCol].getType() == "Free Space"){
-            newSquare.setImageResource(pieces.get(board.board[moveToUndo.newLocRow][moveToUndo.newLocCol].toString()));
+        if(moveToUndo.capturedPiece == null){
+            return;
+        }
+        Log.e("undoMove",moveToUndo.capturedPiece.getName());
+        if(!board.board[moveToUndo.newLocRow][moveToUndo.newLocCol].getType().equals("Free Space")){
+            newSquare.setImageResource(pieces.get(board.board[moveToUndo.newLocRow][moveToUndo.newLocCol].getName()));
         }
     }
 
